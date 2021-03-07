@@ -4,6 +4,10 @@ import warnings
 BASE_ERROR_MSG = "Requirement {} error; command {} returned a non-zero exit code, {}, with output:\n\n{}"
 MISSING_ERROR_MSG = "Requirement {} not fulfilled; command {} not found"
 
+# Variables utilized as a "cache" so duplicate requirement-checking does not happen and waste time and CPU cycles
+REQUIREMENTS_FULFILLED = []
+REQUIREMENTS_UNFULFILLED = []
+
 
 class RequirementError(Exception):
 
@@ -84,8 +88,14 @@ class Requirement():
         Returns:
             bool: True if the requirement check passes. False if it fails and self.warn is True
         """
+        if self in REQUIREMENTS_FULFILLED:
+            return True
+        elif self in REQUIREMENTS_UNFULFILLED:
+            return False
+        
         try:
             subprocess.check_output(self.command, stderr=subprocess.STDOUT)
+            REQUIREMENTS_FULFILLED.append(self)
             return True
         except FileNotFoundError:
             if not self.warn:
@@ -93,6 +103,7 @@ class Requirement():
             else:
                 warnings.warn(MISSING_ERROR_MSG.format(
                     self.name, self.command), RequirementMissingWarning, stacklevel=2)
+                REQUIREMENTS_UNFULFILLED.append(self)
                 return False
         except subprocess.CalledProcessError as e:
             output = e.output.decode().strip()
@@ -101,7 +112,12 @@ class Requirement():
             else:
                 warnings.warn(BASE_ERROR_MSG.format(
                     self.name, self.command, e.returncode, output), RequirementWarning, stacklevel=2)
+            REQUIREMENTS_UNFULFILLED.append(self)
             return False
+
+    def __eq__(self, o):
+        # Define the equality operator as "the commands are the same". This is used in checking the "checked requirements cache" so that the same requirement is not checked multiple times, which would be useless
+        return self.command == o.command
 
 
 class RequirementWarning(Warning):
