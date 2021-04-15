@@ -115,7 +115,7 @@ class Requirement():
             REQUIREMENTS_UNFULFILLED.append(self)
             return False
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         # Define the equality operator as "the commands are the same". This is used in checking the "checked requirements cache" so that the same requirement is not checked multiple times, which would be useless
         return self.command == other.command
 
