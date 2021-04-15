@@ -29,5 +29,4 @@ for r in REQUIREMENTS:
 ## Tips
 
 - Make sure your commands to check requirements end with the correct exit code! This often means using flags like `-v`, `-h` when it comes to command line tools
-
 - You do not need to check for requirements right away; you can create `Requirement` at any time and check it whenever you want

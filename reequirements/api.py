@@ -25,14 +25,14 @@ class RequirementError(Exception):
         msg (str): Human readable string describing the exception
     """
 
-    def __init__(self, requirement, output, exit_code):
+    def __init__(self, requirement: "Requirement", output: str, exit_code: int) -> None:
         self.requirement = requirement
         self.output = output
         self.exit_code = exit_code
         super().__init__(self.msg)
 
     @property
-    def msg(self):
+    def msg(self) -> str:
         return BASE_ERROR_MSG.format(self.requirement.name, self.requirement.command, self.exit_code, self.output)
 
 
@@ -52,14 +52,14 @@ class RequirementMissing(RequirementError):
         msg (str): Human readable string describing the exception
     """
 
-    def __init__(self, requirement):
+    def __init__(self, requirement: "Requirement") -> None:
         self.requirement = requirement
         self.output = ""
         self.exit_code = 127
         super().__init__(self.requirement, self.output, self.exit_code)
 
     @property
-    def msg(self):
+    def msg(self) -> str:
         return MISSING_ERROR_MSG.format(self.requirement.name, self.requirement.command)
 
 
@@ -73,12 +73,12 @@ class Requirement():
         warn (bool, optional): If True, issue a warning instead of throwing an exception on a requirement check failure. Defaults to False.
     """
 
-    def __init__(self, name, command, warn=False):
+    def __init__(self, name: str, command: list, warn: bool = False) -> None:
         self.name = name
         self.command = command
         self.warn = warn
 
-    def check(self):
+    def check(self) -> bool:
         """Check if a requirement is fulfilled
 
         Raises:
@@ -115,9 +115,9 @@ class Requirement():
             REQUIREMENTS_UNFULFILLED.append(self)
             return False
 
-    def __eq__(self, o):
+    def __eq__(self, other):
         # Define the equality operator as "the commands are the same". This is used in checking the "checked requirements cache" so that the same requirement is not checked multiple times, which would be useless
-        return self.command == o.command
+        return self.command == other.command
 
 
 class RequirementWarning(Warning):

@@ -15,7 +15,7 @@ setuptools.setup(
     url='https://github.com/zmarffy/reequirements',
     license='MIT',
     description='Library for defining and checking for the status of requirements needed for your Python project',
-    python_requires='>=3.6',
+    python_requires='>=3.3',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
 )
