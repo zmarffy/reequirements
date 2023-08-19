@@ -11,18 +11,18 @@ REQUIREMENTS_UNFULFILLED = []
 
 class RequirementError(Exception):
 
-    """An exception to throw when a requirement is missing
+    """An exception to throw when a requirement does not pass the requirement check test.
 
     Args:
-        requirement (Requirement): The Requirement object that did not pass the requirement check test
-        output (str): The text output of the command that did not pass the requirement check test
-        exit_code (int): The code that the requirement command exited with
+        requirement (Requirement): The Requirement object that did not pass the requirement check test.
+        output (str): The text output of the command that did not pass the requirement check test.
+        exit_code (int): The code that the requirement command exited with.
 
     Attributes:
-        requirement (Requirement): The Requirement object that did not pass the requirement check test
-        output (str): The text output of the command that did not pass the requirement check test
-        exit_code (int): The code that the requirement command exited with
-        msg (str): Human readable string describing the exception
+        requirement (Requirement): The Requirement object that did not pass the requirement check test.
+        output (str): The text output of the command that did not pass the requirement check test.
+        exit_code (int): The code that the requirement command exited with.
+        msg (str): Human readable string describing the exception.
     """
 
     def __init__(self, requirement: "Requirement", output: str, exit_code: int) -> None:
@@ -33,23 +33,25 @@ class RequirementError(Exception):
 
     @property
     def msg(self) -> str:
-        return BASE_ERROR_MSG.format(self.requirement.name, self.requirement.command, self.exit_code, self.output)
+        return BASE_ERROR_MSG.format(
+            self.requirement.name, self.requirement.command, self.exit_code, self.output
+        )
 
 
 class RequirementMissing(RequirementError):
 
-    """An exception to throw when a requirement is missing
+    """An exception to throw when a requirement is missing.
 
     Args:
-        requirement (Requirement): The Requirement object that is missing
-        output (str): The text output of the command that failed
-        exit_code (int): The code that the requirement command exited with
+        requirement (Requirement): The Requirement object that is missing.
+        output (str): The text output of the command that failed.
+        exit_code (int): The code that the requirement command exited with.
 
     Attributes:
-        requirement (Requirement): The Requirement object that is missing
-        output (str): The text output of the command that failed
-        exit_code (int): The code that the requirement command exited with
-        msg (str): Human readable string describing the exception
+        requirement (Requirement): The Requirement object that is missing.
+        output (str): The text output of the command that failed.
+        exit_code (int): The code that the requirement command exited with.
+        msg (str): Human readable string describing the exception.
     """
 
     def __init__(self, requirement: "Requirement") -> None:
@@ -63,36 +65,36 @@ class RequirementMissing(RequirementError):
         return MISSING_ERROR_MSG.format(self.requirement.name, self.requirement.command)
 
 
-class Requirement():
+class Requirement:
 
-    """Represents a requirement for a project
+    """Represents a requirement for a project.
 
     Args:
-        name (str): The friendly name of the requirement
-        command (list): The command to run to check the requirement
+        name (str): The friendly name of the requirement.
+        command (list[str]): The command to run to check the requirement.
         warn (bool, optional): If True, issue a warning instead of throwing an exception on a requirement check failure. Defaults to False.
     """
 
-    def __init__(self, name: str, command: list, warn: bool = False) -> None:
+    def __init__(self, name: str, command: list[str], warn: bool = False) -> None:
         self.name = name
         self.command = command
         self.warn = warn
 
     def check(self) -> bool:
-        """Check if a requirement is fulfilled
+        """Check if a requirement is fulfilled.
 
         Raises:
-            RequirementMissing: If the requirement is missing (command to check not found) and self.warn is False
-            RequirementError: If the requirement check fails (command to check returns any other nonzero exit code besides 127) and self.warn is False
+            RequirementMissing: If the requirement is missing (command to check not found) and self.warn is False.
+            RequirementError: If the requirement check fails (command to check returns any other nonzero exit code besides 127) and self.warn is False.
 
         Returns:
-            bool: True if the requirement check passes. False if it fails and self.warn is True
+            bool: True if the requirement check passes. False if it fails and self.warn is True.
         """
         if self in REQUIREMENTS_FULFILLED:
             return True
         elif self in REQUIREMENTS_UNFULFILLED:
             return False
-        
+
         try:
             subprocess.check_output(self.command, stderr=subprocess.STDOUT)
             REQUIREMENTS_FULFILLED.append(self)
@@ -101,8 +103,11 @@ class Requirement():
             if not self.warn:
                 raise RequirementMissing(self) from None
             else:
-                warnings.warn(MISSING_ERROR_MSG.format(
-                    self.name, self.command), RequirementMissingWarning, stacklevel=2)
+                warnings.warn(
+                    MISSING_ERROR_MSG.format(self.name, self.command),
+                    RequirementMissingWarning,
+                    stacklevel=2,
+                )
                 REQUIREMENTS_UNFULFILLED.append(self)
                 return False
         except subprocess.CalledProcessError as e:
@@ -110,8 +115,13 @@ class Requirement():
             if not self.warn:
                 raise RequirementError(self, output, e.returncode) from None
             else:
-                warnings.warn(BASE_ERROR_MSG.format(
-                    self.name, self.command, e.returncode, output), RequirementWarning, stacklevel=2)
+                warnings.warn(
+                    BASE_ERROR_MSG.format(
+                        self.name, self.command, e.returncode, output
+                    ),
+                    RequirementWarning,
+                    stacklevel=2,
+                )
             REQUIREMENTS_UNFULFILLED.append(self)
             return False
 

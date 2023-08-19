@@ -5,5 +5,7 @@
 dist/
 build/
 .vscode/
-.eggs
 __pycache__
+venv/
+poetry.lock
+test-report.xml
